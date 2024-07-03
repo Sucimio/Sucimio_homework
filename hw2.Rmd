@@ -1,0 +1,126 @@
+---
+title: "hw2"
+author: "张尉航"
+date: "2024-07-02"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+1.
+ca_pa<-read.csv("data/calif_penn_2011.csv")
+dim(ca_pa)
+colSums(apply(ca_pa,c(1,2),is.na))
+print("先生成一个与原数据框相同的矩阵，表明对应位置的值然后累积总和，也就是计算ca_pa中每一列NA的值得数量，并且返回向量")
+ca_pa_clean<-na.omit(ca_pa)
+r_eliminated <- nrow(ca_pa) - nrow(ca_pa_clean)
+r_eliminated
+print("一个计算每列的NA数量，另一个通过计算删除的行数，如果NA大于0且与删除的行数匹配，则一致")
+```
+```{r}
+2.
+library(ggplot2)
+ggplot(ca_pa_clean, aes(x = Built_2005_or_later, y = Median_house_value)) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm", color = "blue") + 
+  labs(title = "Median House Prices vs. Built Since 2005", 
+       x = "Percentage of Houses Built Since 2005 (%)", 
+       y = "Median House Value") +
+  theme_minimal()
+ggplot(ca_pa_clean, aes(x = Built_2005_or_later, y = Median_house_value, color = as.factor(STATEFP))) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm") + 
+  labs(title = "Median House Prices vs. Built Since 2005 by State", 
+       x = "Percentage of Houses Built Since 2005 (%)", 
+       y = "Median House Value", 
+       color = "State") +
+  facet_wrap(~ STATEFP, labeller = as_labeller(c(`6` = "California", `42` = "Pennsylvania"))) +
+  scale_color_manual(values = c("6" = "blue", "42" = "red"), 
+                     labels = c("California", "Pennsylvania")) +
+  theme_minimal()
+```
+```{r}
+3.
+ca_pa_clean<-na.omit(ca_pa)
+nrow(ca_pa_clean)
+ca_pa$Vacancy_Rate<-ca_pa$Vacant_units/ca_pa$Total_units
+summary(ca_pa$Vacancy_Rate)
+ggplot(ca_pa,aes(x=Vacancy_Rate,y=Median_house_value))+
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm", color = "blue") + 
+  labs(title = "Median House Value vs. Vacancy Rate", 
+       x = "Vacancy Rate", 
+       y = "Median House Value") +
+  theme_minimal()
+ggplot(ca_pa, aes(x = Vacancy_Rate, y = Median_house_value, color = as.factor(STATEFP))) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm") + 
+  labs(title = "Median House Value vs. Vacancy Rate by State", 
+       x = "Vacancy Rate", 
+       y = "Median House Value", 
+       color = "State") +
+  facet_wrap(~ STATEFP, labeller = as_labeller(c(`6` = "California", `42` = "Pennsylvania"))) +
+  scale_color_manual(values = c("blue", "red"), 
+                     labels = c("California", "Pennsylvania")) +
+  theme_minimal()
+```
+```{r}
+4.
+acca <- c()
+for(tract in 1:nrow(ca_pa)) {
+  if(ca_pa$STATEFP[tract] == 6) {
+    if(ca_pa$COUNTYFP[tract] == 1) {
+      acca <- c(acca, tract)
+      }
+    }
+  }
+accamhv <- c()
+for(tract in acca) {
+  accamhv <- c(accamhv, ca_pa[tract,10])
+  }
+median(accamhv)
+print("这段代码的作用是找出加利福尼亚州的accmhv，然后计算普查区中房屋建造比例的中位数，首先创造一个空向量acca，然后用for循环遍历ca_pa的每一行，检查是否属于，如果属于，就添加，第二个for循环普查每个普查区，最后，计算accmhv中的中位数")
+median(ca_pa$Built_2005_or_later[ca_pa$STATEFP == 6 & ca_pa$COUNTYFP == 1])
+mean(ca_pa$Built_2005_or_later[ca_pa$STATEFP == 6 & ca_pa$COUNTYFP == 1])
+mean(ca_pa$Built_2005_or_later[ca_pa$STATEFP == 6 & ca_pa$COUNTYFP == 85])
+mean(ca_pa$Built_2005_or_later[ca_pa$STATEFP == 42 & ca_pa$COUNTYFP == 3])
+```
+```{r}
+5.
+gender <- factor(c(rep("female", 91), rep("male", 92)))
+table(gender)
+gender <- factor(gender, levels=c("male", "female"))
+table(gender)
+gender <- factor(gender, levels=c("Male", "female"))
+table(gender)
+table(gender, exclude=NULL)
+print("第一步中的gender是一个因子向量，使用table计算各因子水平的频数，为91个female和92个male，第二步通过levels参数重新排序了gender因子的水平顺序，第三步将male写成了Male，所以Male未输出，最后一步用exclude=NULL，显示了所有可能的因子水平")
+```
+```{r}
+6.
+p_r<-function(x,cutoff){
+  mean(x>cutoff)
+}
+x<-1:100
+cutoff<-50
+p_r(x,cutoff)
+library(Devore7)
+data(ex01.36)
+head(ex01.36)
+summary(ex01.36)
+library(lattice)
+p_e_7 <- mean(ex01.36 > 7)
+p_e_7
+```
+```{r}
+7.
+library(MASS)
+data(Rabbit)
+str(Rabbit)
+Rabbit_unstacked <- unstack(Rabbit, BPchange ~ Treatment + Dose + Rabbit)
+```
